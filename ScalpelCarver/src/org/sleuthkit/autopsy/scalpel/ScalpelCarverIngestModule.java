@@ -50,7 +50,7 @@ import org.sleuthkit.datamodel.Volume;
 /**
  * Scalpel carving ingest module
  */
-class ScalpelCarverIngestModule { // extends IngestModuleAbstractFile { // disable autodiscovery for now  {
+public class ScalpelCarverIngestModule extends IngestModuleAbstractFile { 
     
     private static final Logger logger = Logger.getLogger(ScalpelCarverIngestModule.class.getName());
     
@@ -64,19 +64,20 @@ class ScalpelCarverIngestModule { // extends IngestModuleAbstractFile { // disab
     private String configFilePath;
     private boolean initialized = false;
     private ScalpelCarver carver;
+    public long scalpelPtr;
 
     private ScalpelCarverIngestModule() {
         ScalpelCarver.init();
     }
     
-   // @Override
+    @Override
     public ProcessResult process(PipelineContext<IngestModuleAbstractFile> pipelineContext, AbstractFile abstractFile) {
         
         if (!initialized) {
             return ProcessResult.OK;
         }
         
-        // only process files whose type is TSK_DB_FILES_TYPE_ENUM.UNALLOC_BLOCKS
+       //  only process files whose type is TSK_DB_FILES_TYPE_ENUM.UNALLOC_BLOCKS
         TSK_DB_FILES_TYPE_ENUM type = abstractFile.getType();
         if (type != TSK_DB_FILES_TYPE_ENUM.UNALLOC_BLOCKS) {
             return ProcessResult.OK;
@@ -123,7 +124,7 @@ class ScalpelCarverIngestModule { // extends IngestModuleAbstractFile { // disab
         // carve the AbstractFile
         List<CarvedFileMeta> output = null;
         try {
-            output = carver.carve(abstractFile, configFilePath, scalpelOutputDirPath);
+            output = carver.carve(abstractFile, configFilePath, scalpelOutputDirPath,scalpelPtr);
         } catch (ScalpelException ex) {
             logger.log(Level.SEVERE, "Error when attempting to carved data from AbstractFile with ID " + abstractFile.getId());
             return ProcessResult.OK;
@@ -208,7 +209,7 @@ class ScalpelCarverIngestModule { // extends IngestModuleAbstractFile { // disab
         return instance;
     }
     
-  //  @Override
+    @Override
     public void init(IngestModuleInit initContext) {
         
         // make sure this is Windows
@@ -242,45 +243,55 @@ class ScalpelCarverIngestModule { // extends IngestModuleAbstractFile { // disab
         
         // copy the default config file to the user's home directory if one
         // is not already there
-        try {
+     try{
             PlatformUtil.extractResourceToUserConfigDir(this.getClass(), configFileName);
         } catch (IOException ex) {
             logger.log(Level.SEVERE, "Could not obtain the path to the Scalpel configuration file.", ex);
             return;
+        }   
+
+     try{
+         int yyy=5;
+         scalpelPtr= ScalpelCarver.initialize(configFilePath,moduleOutputDirPath);
+         int oranges=5;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while initializing Scalpel" , e);
         }
         
         initialized = true;
     }
 
-   // @Override
-    public void complete() { }
+    @Override
+    public void complete() {
+        try{
+       ScalpelCarver.finalize(scalpelPtr);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while initializing Scalpel" , e);
+        }
+    }
 
-   // @Override
+    @Override
     public void stop() { }
 
-   // @Override
+    @Override
     public String getName() {
         return MODULE_NAME;
     }
 
-  //  @Override
+    @Override
     public String getVersion() {
         return MODULE_VERSION;
     }
 
-   // @Override
+    @Override
     public String getDescription() {
         return MODULE_DESCRIPTION;
     }
 
-   // @Override
+    @Override
     public boolean hasBackgroundJobsRunning() {
         return false;
     }
     
-    
-
-
-
-    
+  
 }

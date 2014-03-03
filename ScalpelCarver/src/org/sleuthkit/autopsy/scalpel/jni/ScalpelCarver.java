@@ -18,18 +18,18 @@
  */
 package org.sleuthkit.autopsy.scalpel.jni;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import org.sleuthkit.autopsy.coreutils.Logger;
 import org.sleuthkit.autopsy.scalpel.jni.ScalpelOutputParser.CarvedFileMeta;
 import org.sleuthkit.datamodel.AbstractFile;
 import org.sleuthkit.datamodel.ReadContentInputStream;
-
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import org.sleuthkit.autopsy.coreutils.Logger;
+import org.sleuthkit.autopsy.scalpel.ScalpelCarverIngestModule;
 /**
  * JNI wrapper over libscalpel and library loader
  */
@@ -39,9 +39,17 @@ public class ScalpelCarver {
     private static final String SCALPEL_OUTPUT_FILE_NAME = "audit.txt";
     private static boolean initialized = false;
     private static final Logger logger = Logger.getLogger(ScalpelCarver.class.getName());
-
+    
     private static native void carveNat(String carverInputId, ReadContentInputStream input, String configFilePath, String outputFolderPath) throws ScalpelException;
-
+    public static native long initialize( String configFilePath, String outputFolderPath)throws ScalpelException;
+    public static native void carve(String carverInputId, ReadContentInputStream input, long ptr) throws ScalpelException;
+    public static native void finalize(long ptr) throws ScalpelException;
+    
+  /*
+ +extern int libscalpel_initialize(scalpelState ** state, char * confFilePath,  char * outDir, const scalpelState& options);
+ +extern int libscalpel_carve_input(scalpelState * state, ScalpelInputReader * const reader);
+ +extern int libscalpel_finalize(scalpelState ** state)
+   */
     public  ScalpelCarver() {
         
     }
@@ -111,7 +119,7 @@ public class ScalpelCarver {
      * @return list of carved files info
      * @throws ScalpelException on errors
      */
-    public List<CarvedFileMeta> carve(AbstractFile file, String configFilePath, String outputFolderPath) throws ScalpelException {
+    public List<CarvedFileMeta> carve(AbstractFile file, String configFilePath, String outputFolderPath, long scalpelPtr) throws ScalpelException {
         if (!initialized) {
             throw new ScalpelException("Scalpel library is not fully initialized. ");
         }
@@ -138,10 +146,13 @@ public class ScalpelCarver {
         
 
         try {
-            carveNat(carverInputId, carverInput, configFilePath, outputFolderPath);
+          //  scalpelPtr= ScalpelCarver.initialize(configFilePath,outputFolderPath);
+          //carveNat(carverInputId, carverInput, configFilePath, outputFolderPath);
+          carve(carverInputId, carverInput, scalpelPtr);
+
         }
         catch (Exception e) {
-            logger.log(Level.SEVERE, "Error while caving file " + file, e);
+            logger.log(Level.SEVERE, "Error while carving file " + file, e);
             throw new ScalpelException(e);
         }
         finally {
