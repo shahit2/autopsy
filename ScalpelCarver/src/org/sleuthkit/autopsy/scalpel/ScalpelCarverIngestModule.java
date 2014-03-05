@@ -263,8 +263,9 @@ public class ScalpelCarverIngestModule extends IngestModuleAbstractFile {
 
     @Override
     public void complete() {
+        System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
         try{
-       ScalpelCarver.finalize(scalpelPtr);
+            if (scalpelPtr !=0) ScalpelCarver.finalize(scalpelPtr);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error while initializing Scalpel" , e);
         }

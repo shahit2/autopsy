@@ -148,7 +148,8 @@ public class ScalpelCarver {
         try {
           //  scalpelPtr= ScalpelCarver.initialize(configFilePath,outputFolderPath);
           //carveNat(carverInputId, carverInput, configFilePath, outputFolderPath);
-          carve(carverInputId, carverInput, scalpelPtr);
+          System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"+scalpelPtr);
+          if (scalpelPtr != 0) carve(carverInputId, carverInput, scalpelPtr);
 
         }
         catch (Exception e) {
