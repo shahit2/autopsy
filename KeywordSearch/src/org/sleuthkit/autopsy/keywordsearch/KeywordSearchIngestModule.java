@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -44,7 +45,6 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.sleuthkit.autopsy.casemodule.Case;
 import org.sleuthkit.autopsy.coreutils.EscapeUtil;
 import org.sleuthkit.autopsy.coreutils.MessageNotifyUtil;
@@ -377,7 +377,9 @@ public final class KeywordSearchIngestModule extends IngestModuleAbstractFile {
             // we had cases where getStatus was OK, but the connection resulted in a 404
             server.queryNumIndexedDocuments();
         } catch (KeywordSearchModuleException | NoOpenCoreException ex) {
-            throw new IngestModuleException("Error connecting to SOLR server: " + ex.getMessage());
+            throw new IngestModuleException(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchIngestModule.init.exception.errConnToSolr.msg",
+                                        ex.getMessage()));
         }
 
         //initialize extractors
@@ -1182,6 +1184,18 @@ public final class KeywordSearchIngestModule extends IngestModuleAbstractFile {
             }
 
             return null;
+        }
+        
+        @Override
+        protected void done() {
+            // call get to see if there were any errors
+            try {
+                get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                logger.log(Level.SEVERE, "Error performing keyword search: " + e.getMessage());
+                services.postMessage(IngestMessage.createErrorMessage(++messageID, instance, "Error performing keyword search", e.getMessage()));
+            }
         }
 
         /**
