@@ -45,7 +45,7 @@ public class ScalpelCarver {
     private static boolean initialized = false;
     private static final Logger logger = Logger.getLogger(ScalpelCarver.class.getName());
     
-    private static native void carveNat(String carverInputId, ReadContentInputStream input, String configFilePath, String outputFolderPath) throws ScalpelException;
+ //   private static native void carveNat(String carverInputId, ReadContentInputStream input, String configFilePath, String outputFolderPath) throws ScalpelException;
     public static native long initialize( String configFilePath, String outputFolderPath)throws ScalpelException;
     public static native void carve(String carverInputId, ReadContentInputStream input, long ptr) throws ScalpelException;
     public static native void finalize(long ptr) throws ScalpelException;
